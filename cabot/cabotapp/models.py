@@ -20,6 +20,7 @@ import re
 import time
 import os
 import subprocess
+import socket
 
 import requests
 from celery.utils.log import get_task_logger
@@ -668,6 +669,31 @@ class HttpStatusCheck(StatusCheck):
             else:
                 result.succeeded = True
         return result
+
+
+class TcpStatusCheck(StatusCheck):
+
+    class Meta(StatusCheck.Meta):
+        proxy = True
+
+    @property
+    def check_category(self):
+        return "TCP check"
+
+    def _run(self):
+        result = StatusCheckResult(check=self)
+        try:
+            endpoint = self.endpoint.split(':')
+            s = socket.socket()
+            s.settimeout(float(self.timeout))
+            s.connect((endpoint[0], int(endpoint[1])))
+            s.close()
+            result.succeeded = True
+        except Exception as e:
+            result.error = u'TCP connect error occurred: %s' % (e,)
+            result.succeeded = False
+        return result
+
 
 class JenkinsStatusCheck(StatusCheck):
 
