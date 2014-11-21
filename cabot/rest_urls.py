@@ -92,6 +92,11 @@ router.register(r'icmp_checks', create_viewset(
     arg_fields=status_check_fields,
 ))
 
+router.register(r'tcp_checks', create_viewset(
+    arg_model=models.TcpStatusCheck, 
+    arg_fields=status_check_fields + ('endpoint',),
+))
+
 router.register(r'graphite_checks', create_viewset(
     arg_model=models.GraphiteStatusCheck, 
     arg_fields=status_check_fields + (

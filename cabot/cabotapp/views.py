@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.conf import settings
 from models import (
     StatusCheck, GraphiteStatusCheck, JenkinsStatusCheck, HttpStatusCheck, ICMPStatusCheck,
-    StatusCheckResult, UserProfile, Service, Instance, Shift, get_duty_officers)
+    TcpStatusCheck, StatusCheckResult, UserProfile, Service, Instance, Shift, get_duty_officers)
 from tasks import run_status_check as _run_status_check
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -69,6 +69,11 @@ def duplicate_http_check(request, pk):
     pc = StatusCheck.objects.get(pk=pk)
     npk = pc.duplicate()
     return HttpResponseRedirect(reverse('update-http-check', kwargs={'pk': npk}))
+
+def duplicate_tcp_check(request, pk):
+    pc = StatusCheck.objects.get(pk=pk)
+    npk = pc.duplicate()
+    return HttpResponseRedirect(reverse('update-tcp-check', kwargs={'pk': npk}))
 
 def duplicate_graphite_check(request, pk):
     pc = StatusCheck.objects.get(pk=pk)
@@ -226,6 +231,32 @@ class HttpStatusCheckForm(StatusCheckForm):
             'status_code': forms.TextInput(attrs={
                 'style': 'width: 20%',
                 'placeholder': '200',
+            }),
+        })
+
+
+class TcpStatusCheckForm(StatusCheckForm):
+
+    def __init__(self, *args, **kwargs):
+        super(TcpStatusCheckForm, self).__init__(*args, **kwargs)
+        self.fields['endpoint'].help_text = 'Host and Port'
+
+    class Meta:
+        model = TcpStatusCheck
+        fields = (
+            'name',
+            'endpoint',
+            'timeout',
+            'frequency',
+            'importance',
+            'active',
+            'debounce',
+        )
+        widgets = dict(**base_widgets)
+        widgets.update({
+            'endpoint': forms.TextInput(attrs={
+                'style': 'width: 100%',
+                'placeholder': 'host:port',
             }),
         })
 
@@ -456,6 +487,16 @@ class HttpCheckCreateView(CheckCreateView):
 class HttpCheckUpdateView(CheckUpdateView):
     model = HttpStatusCheck
     form_class = HttpStatusCheckForm
+
+
+class TcpCheckCreateView(CheckCreateView):
+    model = TcpStatusCheck
+    form_class = TcpStatusCheckForm
+
+
+class TcpCheckUpdateView(CheckUpdateView):
+    model = TcpStatusCheck
+    form_class = TcpStatusCheckForm
 
 
 class JenkinsCheckCreateView(CheckCreateView):

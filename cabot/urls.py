@@ -1,10 +1,11 @@
 from django.conf.urls import patterns, include, url
 from cabot.cabotapp.views import (
     run_status_check, graphite_api_data, twiml_callback, checks_run_recently,
-    duplicate_icmp_check, duplicate_graphite_check, duplicate_http_check, duplicate_jenkins_check, duplicate_instance,
+    duplicate_icmp_check, duplicate_graphite_check, duplicate_http_check, duplicate_tcp_check, duplicate_jenkins_check, duplicate_instance,
     GraphiteCheckCreateView, GraphiteCheckUpdateView,
     HttpCheckCreateView, HttpCheckUpdateView,
     ICMPCheckCreateView, ICMPCheckUpdateView,
+    TcpCheckCreateView, TcpCheckUpdateView,
     JenkinsCheckCreateView, JenkinsCheckUpdateView,
     StatusCheckDeleteView, StatusCheckListView, StatusCheckDetailView,
     StatusCheckResultDetailView, StatusCheckReportView)
@@ -102,6 +103,14 @@ urlpatterns = patterns('',
                            ), name='update-http-check'),
                        url(r'^httpcheck/duplicate/(?P<pk>\d+)/',
                            view=duplicate_http_check, name='duplicate-http-check'),
+
+                       url(r'^tcpcheck/create/', view=TcpCheckCreateView.as_view(),
+                           name='create-tcp-check'),
+                       url(r'^tcpcheck/update/(?P<pk>\d+)/',
+                           view=TcpCheckUpdateView.as_view(
+                           ), name='update-tcp-check'),
+                       url(r'^tcpcheck/duplicate/(?P<pk>\d+)/',
+                           view=duplicate_tcp_check, name='duplicate-tcp-check'),
 
                        url(r'^jenkins_check/create/', view=JenkinsCheckCreateView.as_view(),
                            name='create-jenkins-check'),

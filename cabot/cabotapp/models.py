@@ -20,6 +20,7 @@ import re
 import time
 import os
 import subprocess
+import socket
 
 import requests
 from celery.utils.log import get_task_logger
@@ -193,6 +194,9 @@ class CheckGroupMixin(models.Model):
     def jenkins_status_checks(self):
         return self.status_checks.filter(polymorphic_ctype__model='jenkinsstatuscheck')
 
+    def tcp_status_checks(self):
+        return self.status_checks.filter(polymorphic_ctype__model='tcpstatuscheck')
+
     def active_graphite_status_checks(self):
         return self.graphite_status_checks().filter(active=True)
 
@@ -201,6 +205,9 @@ class CheckGroupMixin(models.Model):
 
     def active_jenkins_status_checks(self):
         return self.jenkins_status_checks().filter(active=True)
+
+    def active_tcp_status_checks(self):
+        return self.tcp_status_checks().filter(active=True)
 
     def active_status_checks(self):
         return self.status_checks.filter(active=True)
@@ -668,6 +675,31 @@ class HttpStatusCheck(StatusCheck):
             else:
                 result.succeeded = True
         return result
+
+
+class TcpStatusCheck(StatusCheck):
+
+    class Meta(StatusCheck.Meta):
+        proxy = True
+
+    @property
+    def check_category(self):
+        return "TCP check"
+
+    def _run(self):
+        result = StatusCheckResult(check=self)
+        try:
+            endpoint = self.endpoint.split(':')
+            s = socket.socket()
+            s.settimeout(float(self.timeout))
+            s.connect((endpoint[0], int(endpoint[1])))
+            s.close()
+            result.succeeded = True
+        except Exception as e:
+            result.error = u'TCP connect error occurred: %s' % (e,)
+            result.succeeded = False
+        return result
+
 
 class JenkinsStatusCheck(StatusCheck):
 

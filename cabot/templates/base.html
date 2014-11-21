@@ -73,6 +73,9 @@
                 <li>
                   <a href="{% url "create-icmp-check" %}?service={{ service.id }}&instance={{ instance.id }}" class="" title="Add new ICMP check"><i class="glyphicon glyphicon-transfer"></i> ICMP check</a>
                 </li>
+                <li>
+                  <a href="{% url "create-tcp-check" %}?service={{ service.id }}&instance={{ instance.id }}" class="" title="Add new TCP check"><i class="glyphicon glyphicon-sort"></i> TCP check</a>
+                </li>
               </ul>
             </li>
           </ul>
